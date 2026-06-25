@@ -1,0 +1,26 @@
+import matplotlib.pyplot as plt
+from astropy.io import fits
+import numpy as np
+from scipy.ndimage import gaussian_filter1d
+from scipy.signal import medfilt
+#################################################################
+
+with fits.open("spEigenGal-53054.fits") as hdul:
+    # print(hdul.info())
+    data_full = hdul[0].data  # continumm + lines data
+    spec = data_full.astype(np.float64)
+    data_continumm = medfilt(spec[0], kernel_size=301)
+    # data_continumm = gaussian_filter1d(data_full, sigma=150)
+    eig_lines = data_full[0] - data_continumm   #flux of eigenspectra lines
+coeff0 = hdul[0].header["COEFF0"]
+coeff1 = hdul[0].header["COEFF1"]
+pix = np.arange(7012)
+loglam = coeff0 + coeff1 * pix   # pixel to log wavelength relation
+wavelength = 10**loglam   # wavelength of eigenspectra
+
+#####################################################################
+with fits.open("spec-1678-53433-0425.fits") as hdul:
+    spec = hdul[1].data
+
+flux = spec["flux"]               #flux of the observed galaxy
+wavelength = 10**spec["loglam"]   #wavelength axis of observed galaxy
